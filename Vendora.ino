@@ -5,6 +5,17 @@
  */
 #include <Arduino.h>
 #include <string.h>
+#include <Wire.h>
+#include <hd44780.h>
+#include <hd44780ioClass/hd44780_I2Cexp.h>
+hd44780_I2Cexp lcd;
+bool lcdReady = false;
+void screen(const String& first, const String& second) {
+  if (!lcdReady) return;
+  lcd.clear();
+  lcd.setCursor(0, 0); lcd.print(first.substring(0, 16));
+  lcd.setCursor(0, 1); lcd.print(second.substring(0, 16));
+}
 // Four by four physical matrix keypad; manually scanned (no Keypad library).
 const uint8_t ROW_PINS[4] = {32, 33, 25, 26};
 const uint8_t COL_PINS[4] = {27, 14, 12, 13};
@@ -59,14 +70,17 @@ void showEntry() {
   enteredPin="";
   authenticated=false;
   Serial.println("ENTER FOUR DIGIT PIN; press # to submit, * to clear");
+  screen("ENTER 4-DIGIT", "PIN: ");
 }
 void submitPIN() {
   if (enteredPin.length()!=4) { Serial.println("ERROR,PIN_NEEDS_4_DIGITS"); return; }
   if (pinMatches(enteredPin)) {
     authenticated=true;
     Serial.println("AUTH,OK");
+    screen("PIN VERIFIED", "ACCESS GRANTED");
   } else {
     Serial.println("AUTH,FAIL");
+    screen("INVALID PIN", "TRY AGAIN");
     delay(800); showEntry();
   }
 }
@@ -75,12 +89,16 @@ void handleKey(char key) {
   if (key == '*') { showEntry(); return; }
   if (key >= '0' && key <= '9' && enteredPin.length()<4) {
     enteredPin += key;
+    if (lcdReady) lcd.print('*');
     if (enteredPin.length()==4) Serial.println("PIN: ****");
   } else if (key == '#') submitPIN();
 }
 void setup() {
   Serial.begin(115200);
   initKeypad();
+  Wire.begin(21,22);
+  lcdReady=(lcd.begin(16,2)==0);
+  if (lcdReady) lcd.backlight(); else Serial.println("LCD_NOT_DETECTED");
   Serial.println("VENDORA ESP32 READY");
   showEntry();
 }

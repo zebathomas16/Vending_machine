@@ -1,6 +1,6 @@
-# VENDORA — Version 03: PIN authentication
+# VENDORA — Version 04: Added 16x2 I2C LCD
 
-Four predefined 4-digit PINs; # submits, * clears, access granted/denied over serial.
+Adds 16x2 I2C LCD display and masked PIN entry, same keypad/PIN behavior.
 
 ## Files
 
