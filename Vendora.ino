@@ -91,6 +91,25 @@ void runMotor(const uint8_t pins[4]) {
 }
 // Motor 2 uses GPIO 23,5,4,2 (some are ESP32 boot-strap pins).
 const uint8_t M2[4] = {23,5,4,2};
+constexpr unsigned long LOCK_MS = 30000UL;
+int wrongAttempts = 0;
+bool securityLocked = false;
+unsigned long lockStarted = 0;
+unsigned long lockLCDUpdated = 0;
+void updateSecurityLock() {
+  if (!securityLocked) return;
+  unsigned long elapsed = millis() - lockStarted;
+  if (elapsed >= LOCK_MS) {
+    securityLocked = false;
+    wrongAttempts = 0;
+    enteredPin = "";
+    Serial.println("LOCK,RELEASED");
+    screen("ENTER 4-DIGIT", "PIN: ");
+  } else if (millis()-lockLCDUpdated >= 1000) {
+    lockLCDUpdated = millis();
+    screen("SYSTEM LOCKED", String("WAIT ") + (LOCK_MS-elapsed+999)/1000 + " SEC");
+  }
+}
 void showEntry() {
   enteredPin="";
   authenticated=false;
@@ -120,16 +139,25 @@ void submitPIN() {
   if (pinMatches(enteredPin)) {
     authenticated=true;
     Serial.println("AUTH,OK");
+    wrongAttempts = 0;
     screen("PIN VERIFIED", "ACCESS GRANTED");
     delay(700); showProducts();
   } else {
     Serial.println("AUTH,FAIL");
-    screen("INVALID PIN", "TRY AGAIN");
-    delay(800); showEntry();
+    ++wrongAttempts;
+    if (wrongAttempts >= 3) {
+      securityLocked = true; lockStarted=millis(); lockLCDUpdated=millis();
+      Serial.println("LOCK,ACTIVE,30");
+      screen("SYSTEM LOCKED", "WAIT 30 SEC");
+    } else {
+      screen("INVALID PIN", "TRY AGAIN");
+      delay(800); showEntry();
+    }
   }
 }
 void handleKey(char key) {
   if (key == '\0') return;
+  if (securityLocked) return;
   if (key == '*') { showEntry(); return; }
   if (authenticated) {
     if (key == '1') dispense(1);
@@ -154,5 +182,6 @@ void setup() {
   showEntry();
 }
 void loop() {
+  updateSecurityLock();
   handleKey(readKeypad());
 }

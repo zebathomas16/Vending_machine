@@ -1,6 +1,6 @@
-# VENDORA — Version 06: Added second stepper motor
+# VENDORA — Version 07: PIN security lock system
 
-Adds independent second ULN2003 + 28BYJ-48 Motor 2: key 2.
+Adds three wrong attempts then 30-second millis()-based lock.
 
 ## Files
 
