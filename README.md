@@ -1,6 +1,6 @@
-# VENDORA — Version 07: PIN security lock system
+# VENDORA — Version 08: Documentation
 
-Adds three wrong attempts then 30-second millis()-based lock.
+Adds expanded Doxygen-style documentation and setup instructions; no new hardware logic.
 
 ## Files
 
@@ -17,3 +17,4 @@ Arduino IDE → ESP32 Dev Module → upload the `.ino` sketch. Close Arduino Ser
 - Use an external regulated 5 V supply for each ULN2003 driver with common ground to ESP32.
 - GPIO 2, 5, and 12 are boot-strapping pins; avoid pulling them to conflicting levels during reset.
 - Power-off before changing wiring. A 5 V I2C LCD may require a bidirectional I2C level shifter.
+- Code comments explain each module. In the final report document GPIO pins, motor timing calibration, power supply, failure handling and test measurements.
