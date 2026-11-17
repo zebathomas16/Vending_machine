@@ -89,6 +89,8 @@ void runMotor(const uint8_t pins[4]) {
   }
   for (uint8_t i=0; i<4; ++i) digitalWrite(pins[i], LOW);
 }
+// Motor 2 uses GPIO 23,5,4,2 (some are ESP32 boot-strap pins).
+const uint8_t M2[4] = {23,5,4,2};
 void showEntry() {
   enteredPin="";
   authenticated=false;
@@ -101,11 +103,11 @@ void showProducts() {
 }
 void dispense(int item) {
   if (!authenticated) { Serial.println("ERROR,LOGIN_REQUIRED"); return; }
-  if (item != 1) { Serial.println("ERROR,INVALID_ITEM"); return; }
+  if (item != 1 && item != 2) { Serial.println("ERROR,INVALID_ITEM"); return; }
   screen("DISPENSING...", String("ITEM ") + item);
   Serial.print("MOTOR_START,"); Serial.println(item);
   unsigned long beginTime=micros();
-  runMotor(M1);
+  runMotor(item == 1 ? M1 : M2);
   unsigned long motorTime=micros()-beginTime;
   Serial.print("MOTOR_DONE,"); Serial.println(item);
   Serial.print("MOTOR_TIME_US,"); Serial.println(motorTime);
@@ -131,6 +133,7 @@ void handleKey(char key) {
   if (key == '*') { showEntry(); return; }
   if (authenticated) {
     if (key == '1') dispense(1);
+    else if (key == '2') dispense(2);
     return;
   }
   if (key >= '0' && key <= '9' && enteredPin.length()<4) {
@@ -146,6 +149,7 @@ void setup() {
   lcdReady=(lcd.begin(16,2)==0);
   if (lcdReady) lcd.backlight(); else Serial.println("LCD_NOT_DETECTED");
   initMotor(M1);
+  initMotor(M2);
   Serial.println("VENDORA ESP32 READY");
   showEntry();
 }

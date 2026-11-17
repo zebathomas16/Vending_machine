@@ -1,6 +1,6 @@
-# VENDORA — Version 05: Added first stepper motor
+# VENDORA — Version 06: Added second stepper motor
 
-Adds ULN2003 + 28BYJ-48 Motor 1: key 1 after successful PIN.
+Adds independent second ULN2003 + 28BYJ-48 Motor 2: key 2.
 
 ## Files
 
