@@ -46,13 +46,43 @@ char readKeypad() {
   keyDelivered = true;
   return key;
 }
+// Four demonstration PINs only (not production-ready authentication).
+const char* validPins[] = {"1234", "5678", "2468", "1357"};
+String enteredPin;
+bool authenticated = false;
+bool pinMatches(const String& pin) {
+  if (pin.length()!=4) return false;
+  for (uint8_t i=0; i<4; ++i) if (pin == validPins[i]) return true;
+  return false;
+}
+void showEntry() {
+  enteredPin="";
+  authenticated=false;
+  Serial.println("ENTER FOUR DIGIT PIN; press # to submit, * to clear");
+}
+void submitPIN() {
+  if (enteredPin.length()!=4) { Serial.println("ERROR,PIN_NEEDS_4_DIGITS"); return; }
+  if (pinMatches(enteredPin)) {
+    authenticated=true;
+    Serial.println("AUTH,OK");
+  } else {
+    Serial.println("AUTH,FAIL");
+    delay(800); showEntry();
+  }
+}
 void handleKey(char key) {
-  if (key != '\0') { Serial.print("KEY,"); Serial.println(key); }
+  if (key == '\0') return;
+  if (key == '*') { showEntry(); return; }
+  if (key >= '0' && key <= '9' && enteredPin.length()<4) {
+    enteredPin += key;
+    if (enteredPin.length()==4) Serial.println("PIN: ****");
+  } else if (key == '#') submitPIN();
 }
 void setup() {
   Serial.begin(115200);
   initKeypad();
   Serial.println("VENDORA ESP32 READY");
+  showEntry();
 }
 void loop() {
   handleKey(readKeypad());

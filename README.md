@@ -1,6 +1,6 @@
-# VENDORA — Version 02: Added 4x4 keypad interfacing
+# VENDORA — Version 03: PIN authentication
 
-Actual 4x4 keypad GPIO scan and serial key reporting; no authentication yet.
+Four predefined 4-digit PINs; # submits, * clears, access granted/denied over serial.
 
 ## Files
 
