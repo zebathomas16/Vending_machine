@@ -1,6 +1,6 @@
-# VENDORA — Version 12: Inventory management
+# VENDORA — Version 13: Purchase history
 
-Adds independent stock for both items, out-of-stock handling, and stock updates.
+Adds purchase history implemented with a bounded dynamically allocated FIFO linked list.
 
 ## Files
 
@@ -21,3 +21,4 @@ Install pyserial with `python -m pip install pyserial`.
 - Use an external regulated 5 V supply for each ULN2003 driver with common ground to ESP32.
 - GPIO 2, 5, and 12 are boot-strapping pins; avoid pulling them to conflicting levels during reset.
 - Power-off before changing wiring. A 5 V I2C LCD may require a bidirectional I2C level shifter.
+- The linked list history exists only in RAM, and is not yet per-user. Persistence and individual accounts arrive in V14.

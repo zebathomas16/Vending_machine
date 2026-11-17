@@ -1,4 +1,4 @@
-"""VENDORA V12 | USB serial GUI. Run: python vendora_gui.py; pip install pyserial"""
+"""VENDORA V13 | USB serial GUI. Run: python vendora_gui.py; pip install pyserial"""
 import tkinter as tk
 from tkinter import messagebox, ttk
 import threading, queue, re
@@ -10,7 +10,7 @@ except ImportError:
     list_ports=None
 BG="#0b1220"; PANEL="#142034"; TEXT="#f0f5ff"; MUTED="#9aacc4"
 root=tk.Tk()
-root.title("VENDORA | Version 12")
+root.title("VENDORA | Version 13")
 root.geometry("900x720")
 root.configure(bg=BG)
 port_var=tk.StringVar()
@@ -91,7 +91,7 @@ def on_line(line):
     elif line.startswith("PURCHASE,"):
         activity.set("Purchase complete; wallet and stock refreshed")
         send("STATUS")
-        if False:send("HISTORY")
+        if True:send("HISTORY")
     elif line.startswith("ERROR,"):activity.set(line.replace(","," · "))
     elif line.startswith("MOTOR_START,"):activity.set("Dispensing item " +line.split(",")[1])
     elif line.startswith("MOTOR_DONE,"):activity.set("Motor cycle completed")
@@ -145,7 +145,7 @@ def on_close():
     disconnect();root.destroy()
 
 header=tk.Frame(root,bg=BG);header.pack(fill="x",padx=24,pady=20)
-label(header,"VENDORA  /  VERSION 12",font=("Segoe UI",19,"bold")).pack(side="left")
+label(header,"VENDORA  /  VERSION 13",font=("Segoe UI",19,"bold")).pack(side="left")
 label(header,"USB serial · 115200 baud").pack(side="right")
 bar=tk.Frame(root,bg=PANEL);bar.pack(fill="x",padx=24,pady=8)
 ports=[p.device for p in list_ports.comports()] if list_ports else []
@@ -182,7 +182,7 @@ else:
     recharge_btn=tk.Button(root)
 if True:
     label(root,"",textvariable=stock_var).pack(anchor="w",padx=26)
-if False:
+if True:
     panel=tk.Frame(root,bg=PANEL);panel.pack(fill="both",expand=True,padx=24,pady=10)
     label(panel,"PURCHASE HISTORY (last 10, RAM)").pack(anchor="w",padx=14,pady=8)
     tk.Button(panel,text="Sync history",command=lambda:send("HISTORY")).pack(anchor="e",padx=15)

@@ -5,6 +5,7 @@
  */
 #include <Arduino.h>
 #include <string.h>
+#include <new>
 #include <Wire.h>
 #include <hd44780.h>
 #include <hd44780ioClass/hd44780_I2Cexp.h>
@@ -115,6 +116,47 @@ int walletBalance = 100;
 const int ITEM_PRICES[2] = {20,30};
 // Shared inventory (initially five of each product).
 int itemStock[2] = {5,5};
+/** @brief Linked-list FIFO transaction queue (RAM only, max 10). */
+struct TransactionNode {
+  unsigned long sequence;
+  int item;
+  int paid;
+  int balanceAfter;
+  unsigned long uptimeSeconds;
+  TransactionNode* next;
+};
+TransactionNode* historyFirst = nullptr;
+TransactionNode* historyLast = nullptr;
+int historyCount = 0;
+unsigned long nextTransactionId = 1;
+void popOldest() {
+  if (!historyFirst) return;
+  TransactionNode* old = historyFirst;
+  historyFirst = old->next;
+  if (!historyFirst) historyLast = nullptr;
+  delete old;
+  --historyCount;
+}
+void recordPurchase(int item, int paid) {
+  TransactionNode* node = new (std::nothrow) TransactionNode{
+    nextTransactionId++, item, paid, walletBalance, millis()/1000, nullptr
+  };
+  if (!node) { Serial.println("ERROR,HISTORY_MEMORY"); return; }
+  if (historyCount >= 10) popOldest();
+  if (historyLast) historyLast->next = node;
+  else historyFirst = node;
+  historyLast = node;
+  ++historyCount;
+}
+void printHistory() {
+  Serial.println("HISTORY_BEGIN");
+  for (TransactionNode* n=historyFirst; n; n=n->next) {
+    Serial.print("HISTORY,"); Serial.print(n->sequence); Serial.print(',');
+    Serial.print(n->item); Serial.print(','); Serial.print(n->paid); Serial.print(',');
+    Serial.print(n->balanceAfter); Serial.print(','); Serial.println(n->uptimeSeconds);
+  }
+  Serial.println("HISTORY_END");
+}
 void showEntry() {
   enteredPin="";
   authenticated=false;
@@ -148,6 +190,8 @@ void dispense(int item) {
   Serial.print("WALLET,"); Serial.println(walletBalance);
   --itemStock[item-1];
   Serial.print("STOCK,"); Serial.print(itemStock[0]); Serial.print(","); Serial.println(itemStock[1]);
+  recordPurchase(item, price);
+  Serial.print("PURCHASE,"); Serial.print(item); Serial.print(","); Serial.print(price); Serial.print(","); Serial.println(walletBalance);
   screen("ITEM DISPENSED", "THANK YOU!");
   delay(700);
   showEntry();
@@ -219,6 +263,7 @@ void handleCommand(String cmd) {
     Serial.print("RECHARGE_OK,"); Serial.print(amount); Serial.print(','); Serial.println(walletBalance);
     emitStatus(); return;
   }
+  if (cmd == "HISTORY") { printHistory(); return; }
   Serial.println("ERROR,UNKNOWN_COMMAND");
 }
 void readCommands() {
