@@ -1,6 +1,6 @@
-# VENDORA — Version 10: ESP32-GUI USB serial communication
+# VENDORA — Version 11: Wallet and recharge
 
-Adds serial commands LOGIN,pin / STATUS / BUY,1 / BUY,2 / LOGOUT and a desktop GUI serial client.
+Adds a shared simulated wallet, price validation, and RECHARGE,amount (auth required).
 
 ## Files
 

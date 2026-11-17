@@ -110,6 +110,9 @@ void updateSecurityLock() {
     screen("SYSTEM LOCKED", String("WAIT ") + (LOCK_MS-elapsed+999)/1000 + " SEC");
   }
 }
+// Simulated single-user wallet (multi-user wallets are introduced at v14).
+int walletBalance = 100;
+const int ITEM_PRICES[2] = {20,30};
 void showEntry() {
   enteredPin="";
   authenticated=false;
@@ -122,10 +125,14 @@ void showProducts() {
 }
 void emitStatus() {
   Serial.print("STATUS,AUTH,"); Serial.println(authenticated ? 1 : 0);
+  Serial.print("WALLET,"); Serial.println(walletBalance);
+  Serial.print("PRICES,"); Serial.print(ITEM_PRICES[0]); Serial.print(","); Serial.println(ITEM_PRICES[1]);
 }
 void dispense(int item) {
   if (!authenticated) { Serial.println("ERROR,LOGIN_REQUIRED"); return; }
   if (item != 1 && item != 2) { Serial.println("ERROR,INVALID_ITEM"); return; }
+  int price=ITEM_PRICES[item-1];
+  if (walletBalance < price) { Serial.println("ERROR,LOW_BALANCE"); return; }
   screen("DISPENSING...", String("ITEM ") + item);
   Serial.print("MOTOR_START,"); Serial.println(item);
   unsigned long beginTime=micros();
@@ -133,6 +140,8 @@ void dispense(int item) {
   unsigned long motorTime=micros()-beginTime;
   Serial.print("MOTOR_DONE,"); Serial.println(item);
   Serial.print("MOTOR_TIME_US,"); Serial.println(motorTime);
+  walletBalance -= price;
+  Serial.print("WALLET,"); Serial.println(walletBalance);
   screen("ITEM DISPENSED", "THANK YOU!");
   delay(700);
   showEntry();
@@ -189,6 +198,20 @@ void handleCommand(String cmd) {
     String item=cmd.substring(4);
     if (item != "1" && item != "2") { Serial.println("ERROR,INVALID_ITEM"); return; }
     dispense(item.toInt()); return;
+  }
+  if (cmd.startsWith("RECHARGE,")) {
+    if (!authenticated) { Serial.println("ERROR,LOGIN_REQUIRED"); return; }
+    String value=cmd.substring(9);
+    for (unsigned int i=0; i<value.length(); ++i)
+      if (value[i]<'0' || value[i]>'9') { Serial.println("ERROR,INVALID_AMOUNT"); return; }
+    if (!value.length() || value.length()>5) { Serial.println("ERROR,INVALID_AMOUNT"); return; }
+    int amount=value.toInt();
+    if (amount<1 || amount>10000 || walletBalance>100000-amount) {
+      Serial.println("ERROR,INVALID_AMOUNT"); return;
+    }
+    walletBalance+=amount;
+    Serial.print("RECHARGE_OK,"); Serial.print(amount); Serial.print(','); Serial.println(walletBalance);
+    emitStatus(); return;
   }
   Serial.println("ERROR,UNKNOWN_COMMAND");
 }
