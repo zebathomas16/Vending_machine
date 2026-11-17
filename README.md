@@ -1,11 +1,12 @@
-# VENDORA — Version 13: Purchase history
+# VENDORA — Version 14: Final integrated multi-user vending machine
 
-Adds purchase history implemented with a bounded dynamically allocated FIFO linked list.
+User-provided final integrated version: four individual accounts, masked live keypad mirror, persisted per-user wallets/stock/recent history, demo QR GUI and USB protocol.
 
 ## Files
 
-- `Vendora.ino` — stand-alone ESP32 firmware for this milestone.
-- `vendora_gui.py` — standalone desktop GUI for this milestone.
+- `Vendora_Multiuser.ino` — original final ESP32 firmware from uploaded ZIP.
+- `vendora_multiuser_gui.py` — original final Python GUI from uploaded ZIP.
+- `ORIGINAL_FINAL_README.md` — original project instructions.
 
 ## Run
 
@@ -13,6 +14,7 @@ Arduino IDE → ESP32 Dev Module → upload the `.ino` sketch. Close Arduino Ser
 
 Run `python vendora_gui.py` in V09–V13, or `python vendora_multiuser_gui.py` in V14.
 Install pyserial with `python -m pip install pyserial`.
+Install GUI dependencies with `python -m pip install pyserial "qrcode[pil]"`.
 
 ## Practical notes
 
@@ -21,4 +23,3 @@ Install pyserial with `python -m pip install pyserial`.
 - Use an external regulated 5 V supply for each ULN2003 driver with common ground to ESP32.
 - GPIO 2, 5, and 12 are boot-strapping pins; avoid pulling them to conflicting levels during reset.
 - Power-off before changing wiring. A 5 V I2C LCD may require a bidirectional I2C level shifter.
-- The linked list history exists only in RAM, and is not yet per-user. Persistence and individual accounts arrive in V14.
