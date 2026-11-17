@@ -1,14 +1,17 @@
-# VENDORA — Version 08: Documentation
+# VENDORA — Version 09: GUI prototype
 
-Adds expanded Doxygen-style documentation and setup instructions; no new hardware logic.
+Adds a static Tkinter GUI mock-up only. This version is not yet connected to ESP32.
 
 ## Files
 
 - `Vendora.ino` — stand-alone ESP32 firmware for this milestone.
+- `vendora_gui.py` — standalone desktop GUI for this milestone.
 
 ## Run
 
 Arduino IDE → ESP32 Dev Module → upload the `.ino` sketch. Close Arduino Serial Monitor before connecting a GUI.
+
+Run `python vendora_gui.py` in V09–V13, or `python vendora_multiuser_gui.py` in V14.
 
 ## Practical notes
 
@@ -17,4 +20,4 @@ Arduino IDE → ESP32 Dev Module → upload the `.ino` sketch. Close Arduino Ser
 - Use an external regulated 5 V supply for each ULN2003 driver with common ground to ESP32.
 - GPIO 2, 5, and 12 are boot-strapping pins; avoid pulling them to conflicting levels during reset.
 - Power-off before changing wiring. A 5 V I2C LCD may require a bidirectional I2C level shifter.
-- Code comments explain each module. In the final report document GPIO pins, motor timing calibration, power supply, failure handling and test measurements.
+- The mock GUI intentionally does not control motors; that integration starts in V10.
