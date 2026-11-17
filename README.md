@@ -1,6 +1,6 @@
-# VENDORA — Version 04: Added 16x2 I2C LCD
+# VENDORA — Version 05: Added first stepper motor
 
-Adds 16x2 I2C LCD display and masked PIN entry, same keypad/PIN behavior.
+Adds ULN2003 + 28BYJ-48 Motor 1: key 1 after successful PIN.
 
 ## Files
 

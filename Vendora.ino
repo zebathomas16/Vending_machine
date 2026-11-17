@@ -66,11 +66,52 @@ bool pinMatches(const String& pin) {
   for (uint8_t i=0; i<4; ++i) if (pin == validPins[i]) return true;
   return false;
 }
+// Motor 1 uses RX2/TX2 (GPIO 16/17) and GPIO 18/19.
+const uint8_t M1[4] = {16,17,18,19};
+// 28BYJ-48 with ULN2003: eight correct half-step phases.
+const uint8_t HALF_STEPS[8][4] = {
+ {1,0,0,0}, {1,1,0,0}, {0,1,0,0}, {0,1,1,0},
+ {0,0,1,0}, {0,0,1,1}, {0,0,0,1}, {1,0,0,1}
+};
+constexpr int MOTOR_STEPS = 4096; // Calibrate for the cardboard dispenser.
+constexpr int STEP_DELAY_US = 1500;
+void initMotor(const uint8_t pins[4]) {
+  for (uint8_t i=0; i<4; ++i) {
+    pinMode(pins[i], OUTPUT);
+    digitalWrite(pins[i], LOW);
+  }
+}
+void runMotor(const uint8_t pins[4]) {
+  for (int s=0; s<MOTOR_STEPS; ++s) {
+    uint8_t phase = s % 8;
+    for (uint8_t i=0; i<4; ++i) digitalWrite(pins[i], HALF_STEPS[phase][i]);
+    delayMicroseconds(STEP_DELAY_US);
+  }
+  for (uint8_t i=0; i<4; ++i) digitalWrite(pins[i], LOW);
+}
 void showEntry() {
   enteredPin="";
   authenticated=false;
   Serial.println("ENTER FOUR DIGIT PIN; press # to submit, * to clear");
   screen("ENTER 4-DIGIT", "PIN: ");
+}
+void showProducts() {
+  Serial.println("SELECT ITEM: 1 or 2 (press * to logout)");
+  screen("SELECT ITEM", "1-ITEM1 2-ITEM2");
+}
+void dispense(int item) {
+  if (!authenticated) { Serial.println("ERROR,LOGIN_REQUIRED"); return; }
+  if (item != 1) { Serial.println("ERROR,INVALID_ITEM"); return; }
+  screen("DISPENSING...", String("ITEM ") + item);
+  Serial.print("MOTOR_START,"); Serial.println(item);
+  unsigned long beginTime=micros();
+  runMotor(M1);
+  unsigned long motorTime=micros()-beginTime;
+  Serial.print("MOTOR_DONE,"); Serial.println(item);
+  Serial.print("MOTOR_TIME_US,"); Serial.println(motorTime);
+  screen("ITEM DISPENSED", "THANK YOU!");
+  delay(700);
+  showEntry();
 }
 void submitPIN() {
   if (enteredPin.length()!=4) { Serial.println("ERROR,PIN_NEEDS_4_DIGITS"); return; }
@@ -78,6 +119,7 @@ void submitPIN() {
     authenticated=true;
     Serial.println("AUTH,OK");
     screen("PIN VERIFIED", "ACCESS GRANTED");
+    delay(700); showProducts();
   } else {
     Serial.println("AUTH,FAIL");
     screen("INVALID PIN", "TRY AGAIN");
@@ -87,6 +129,10 @@ void submitPIN() {
 void handleKey(char key) {
   if (key == '\0') return;
   if (key == '*') { showEntry(); return; }
+  if (authenticated) {
+    if (key == '1') dispense(1);
+    return;
+  }
   if (key >= '0' && key <= '9' && enteredPin.length()<4) {
     enteredPin += key;
     if (lcdReady) lcd.print('*');
@@ -99,6 +145,7 @@ void setup() {
   Wire.begin(21,22);
   lcdReady=(lcd.begin(16,2)==0);
   if (lcdReady) lcd.backlight(); else Serial.println("LCD_NOT_DETECTED");
+  initMotor(M1);
   Serial.println("VENDORA ESP32 READY");
   showEntry();
 }
