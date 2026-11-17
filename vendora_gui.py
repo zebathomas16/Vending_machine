@@ -1,4 +1,4 @@
-"""VENDORA V11 | USB serial GUI. Run: python vendora_gui.py; pip install pyserial"""
+"""VENDORA V12 | USB serial GUI. Run: python vendora_gui.py; pip install pyserial"""
 import tkinter as tk
 from tkinter import messagebox, ttk
 import threading, queue, re
@@ -10,7 +10,7 @@ except ImportError:
     list_ports=None
 BG="#0b1220"; PANEL="#142034"; TEXT="#f0f5ff"; MUTED="#9aacc4"
 root=tk.Tk()
-root.title("VENDORA | Version 11")
+root.title("VENDORA | Version 12")
 root.geometry("900x720")
 root.configure(bg=BG)
 port_var=tk.StringVar()
@@ -49,7 +49,7 @@ def buy(item):
     if not state["authenticated"]:messagebox.showwarning("Login","Sign in first");return
     if True and state["wallet"] is not None and state["wallet"]<state["prices"][item-1]:
         messagebox.showwarning("Wallet","Insufficient virtual balance");return
-    if False and state["stock"][item-1] is not None and state["stock"][item-1]<=0:
+    if True and state["stock"][item-1] is not None and state["stock"][item-1]<=0:
         messagebox.showwarning("Stock","Item out of stock");return
     if messagebox.askyesno("Purchase",f"Dispense Item {item}?"):
         send(f"BUY,{item}")
@@ -100,7 +100,7 @@ def on_line(line):
 def refresh_buttons():
     for i,button in enumerate(buy_buttons):
         permitted=state["authenticated"]
-        if False and state["stock"][i] is not None and state["stock"][i]<=0:permitted=False
+        if True and state["stock"][i] is not None and state["stock"][i]<=0:permitted=False
         button.configure(state="normal" if permitted else "disabled")
     if True:recharge_btn.configure(state="normal" if state["authenticated"] else "disabled")
 
@@ -145,7 +145,7 @@ def on_close():
     disconnect();root.destroy()
 
 header=tk.Frame(root,bg=BG);header.pack(fill="x",padx=24,pady=20)
-label(header,"VENDORA  /  VERSION 11",font=("Segoe UI",19,"bold")).pack(side="left")
+label(header,"VENDORA  /  VERSION 12",font=("Segoe UI",19,"bold")).pack(side="left")
 label(header,"USB serial · 115200 baud").pack(side="right")
 bar=tk.Frame(root,bg=PANEL);bar.pack(fill="x",padx=24,pady=8)
 ports=[p.device for p in list_ports.comports()] if list_ports else []
@@ -168,7 +168,7 @@ for i in (1,2):
     label(panel,f"ITEM {i}",font=("Segoe UI",14,"bold")).pack(side="left",padx=14,pady=12)
     p=tk.StringVar(value="₹20" if i==1 else "₹30");item_prices.append(p)
     label(panel,"",textvariable=p).pack(side="left",padx=14)
-    s=tk.StringVar(value="Stock arrives in v12" if True else "Stock pending");stock_indicators.append(s)
+    s=tk.StringVar(value="Stock arrives in v12" if False else "Stock pending");stock_indicators.append(s)
     label(panel,"",textvariable=s).pack(side="left",padx=14)
     btn=tk.Button(panel,text="Dispense",command=lambda item=i:buy(item));btn.pack(side="right",padx=16)
     buy_buttons.append(btn)
@@ -180,7 +180,7 @@ if True:
     recharge_btn=tk.Button(wallet,text="Recharge (virtual)",command=recharge);recharge_btn.pack(side="left",padx=12)
 else:
     recharge_btn=tk.Button(root)
-if False:
+if True:
     label(root,"",textvariable=stock_var).pack(anchor="w",padx=26)
 if False:
     panel=tk.Frame(root,bg=PANEL);panel.pack(fill="both",expand=True,padx=24,pady=10)

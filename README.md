@@ -1,6 +1,6 @@
-# VENDORA — Version 11: Wallet and recharge
+# VENDORA — Version 12: Inventory management
 
-Adds a shared simulated wallet, price validation, and RECHARGE,amount (auth required).
+Adds independent stock for both items, out-of-stock handling, and stock updates.
 
 ## Files
 

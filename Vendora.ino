@@ -113,6 +113,8 @@ void updateSecurityLock() {
 // Simulated single-user wallet (multi-user wallets are introduced at v14).
 int walletBalance = 100;
 const int ITEM_PRICES[2] = {20,30};
+// Shared inventory (initially five of each product).
+int itemStock[2] = {5,5};
 void showEntry() {
   enteredPin="";
   authenticated=false;
@@ -127,12 +129,14 @@ void emitStatus() {
   Serial.print("STATUS,AUTH,"); Serial.println(authenticated ? 1 : 0);
   Serial.print("WALLET,"); Serial.println(walletBalance);
   Serial.print("PRICES,"); Serial.print(ITEM_PRICES[0]); Serial.print(","); Serial.println(ITEM_PRICES[1]);
+  Serial.print("STOCK,"); Serial.print(itemStock[0]); Serial.print(","); Serial.println(itemStock[1]);
 }
 void dispense(int item) {
   if (!authenticated) { Serial.println("ERROR,LOGIN_REQUIRED"); return; }
   if (item != 1 && item != 2) { Serial.println("ERROR,INVALID_ITEM"); return; }
   int price=ITEM_PRICES[item-1];
   if (walletBalance < price) { Serial.println("ERROR,LOW_BALANCE"); return; }
+  if (itemStock[item-1] <= 0) { Serial.println("ERROR,OUT_OF_STOCK"); return; }
   screen("DISPENSING...", String("ITEM ") + item);
   Serial.print("MOTOR_START,"); Serial.println(item);
   unsigned long beginTime=micros();
@@ -142,6 +146,8 @@ void dispense(int item) {
   Serial.print("MOTOR_TIME_US,"); Serial.println(motorTime);
   walletBalance -= price;
   Serial.print("WALLET,"); Serial.println(walletBalance);
+  --itemStock[item-1];
+  Serial.print("STOCK,"); Serial.print(itemStock[0]); Serial.print(","); Serial.println(itemStock[1]);
   screen("ITEM DISPENSED", "THANK YOU!");
   delay(700);
   showEntry();
