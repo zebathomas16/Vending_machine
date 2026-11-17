@@ -1,6 +1,6 @@
-# VENDORA — Version 01: ESP32 initialization
+# VENDORA — Version 02: Added 4x4 keypad interfacing
 
-Initial Serial.begin(115200), setup()/loop(), and heartbeat to verify the board.
+Actual 4x4 keypad GPIO scan and serial key reporting; no authentication yet.
 
 ## Files
 
