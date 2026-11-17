@@ -23,3 +23,12 @@ Install GUI dependencies with `python -m pip install pyserial "qrcode[pil]"`.
 - Use an external regulated 5 V supply for each ULN2003 driver with common ground to ESP32.
 - GPIO 2, 5, and 12 are boot-strapping pins; avoid pulling them to conflicting levels during reset.
 - Power-off before changing wiring. A 5 V I2C LCD may require a bidirectional I2C level shifter.
+## Hardware Components
+
+The VENDORA Smart Vending Machine uses:
+- ESP32 microcontroller
+- 4x4 matrix keypad
+- 16x2 I2C LCD
+- Two stepper motors
+- ULN2003 motor drivers
+- USB serial communication with Python GUI
