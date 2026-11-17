@@ -1,6 +1,6 @@
-# VENDORA — Version 09: GUI prototype
+# VENDORA — Version 10: ESP32-GUI USB serial communication
 
-Adds a static Tkinter GUI mock-up only. This version is not yet connected to ESP32.
+Adds serial commands LOGIN,pin / STATUS / BUY,1 / BUY,2 / LOGOUT and a desktop GUI serial client.
 
 ## Files
 
@@ -12,6 +12,7 @@ Adds a static Tkinter GUI mock-up only. This version is not yet connected to ESP
 Arduino IDE → ESP32 Dev Module → upload the `.ino` sketch. Close Arduino Serial Monitor before connecting a GUI.
 
 Run `python vendora_gui.py` in V09–V13, or `python vendora_multiuser_gui.py` in V14.
+Install pyserial with `python -m pip install pyserial`.
 
 ## Practical notes
 
@@ -20,4 +21,3 @@ Run `python vendora_gui.py` in V09–V13, or `python vendora_multiuser_gui.py` i
 - Use an external regulated 5 V supply for each ULN2003 driver with common ground to ESP32.
 - GPIO 2, 5, and 12 are boot-strapping pins; avoid pulling them to conflicting levels during reset.
 - Power-off before changing wiring. A 5 V I2C LCD may require a bidirectional I2C level shifter.
-- The mock GUI intentionally does not control motors; that integration starts in V10.

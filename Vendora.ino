@@ -120,6 +120,9 @@ void showProducts() {
   Serial.println("SELECT ITEM: 1 or 2 (press * to logout)");
   screen("SELECT ITEM", "1-ITEM1 2-ITEM2");
 }
+void emitStatus() {
+  Serial.print("STATUS,AUTH,"); Serial.println(authenticated ? 1 : 0);
+}
 void dispense(int item) {
   if (!authenticated) { Serial.println("ERROR,LOGIN_REQUIRED"); return; }
   if (item != 1 && item != 2) { Serial.println("ERROR,INVALID_ITEM"); return; }
@@ -133,6 +136,7 @@ void dispense(int item) {
   screen("ITEM DISPENSED", "THANK YOU!");
   delay(700);
   showEntry();
+  emitStatus();
 }
 void submitPIN() {
   if (enteredPin.length()!=4) { Serial.println("ERROR,PIN_NEEDS_4_DIGITS"); return; }
@@ -142,6 +146,7 @@ void submitPIN() {
     wrongAttempts = 0;
     screen("PIN VERIFIED", "ACCESS GRANTED");
     delay(700); showProducts();
+    emitStatus();
   } else {
     Serial.println("AUTH,FAIL");
     ++wrongAttempts;
@@ -170,6 +175,33 @@ void handleKey(char key) {
     if (enteredPin.length()==4) Serial.println("PIN: ****");
   } else if (key == '#') submitPIN();
 }
+String commandBuffer;
+void handleCommand(String cmd) {
+  cmd.trim(); cmd.toUpperCase();
+  if (cmd == "STATUS") { emitStatus(); return; }
+  if (cmd == "LOGOUT") { showEntry(); emitStatus(); return; }
+  if (cmd.startsWith("LOGIN,")) {
+    if (authenticated) { Serial.println("ERROR,SESSION_ACTIVE"); return; }
+    enteredPin=cmd.substring(6);
+    submitPIN(); return;
+  }
+  if (cmd.startsWith("BUY,")) {
+    String item=cmd.substring(4);
+    if (item != "1" && item != "2") { Serial.println("ERROR,INVALID_ITEM"); return; }
+    dispense(item.toInt()); return;
+  }
+  Serial.println("ERROR,UNKNOWN_COMMAND");
+}
+void readCommands() {
+  while (Serial.available()) {
+    char c=static_cast<char>(Serial.read());
+    if (c=='\n' || c=='\r') {
+      if (commandBuffer.length()) handleCommand(commandBuffer);
+      commandBuffer="";
+    } else if (commandBuffer.length() < 70) commandBuffer+=c;
+    else { commandBuffer=""; Serial.println("ERROR,COMMAND_TOO_LONG"); }
+  }
+}
 void setup() {
   Serial.begin(115200);
   initKeypad();
@@ -180,8 +212,10 @@ void setup() {
   initMotor(M2);
   Serial.println("VENDORA ESP32 READY");
   showEntry();
+  emitStatus();
 }
 void loop() {
   updateSecurityLock();
+  readCommands();
   handleKey(readKeypad());
 }
